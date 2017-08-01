@@ -297,6 +297,9 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 		enum pdo_param_event event_type TSRMLS_DC)
 {
 	pdo_4d_stmt *S = (pdo_4d_stmt*)stmt->driver_data;
+#if PHP_VERSION_ID >= 70000
+	zval *parameter;
+#endif
 	if(S->state == NULL) { /* it's not a prepared statement */
 		return 1;	
 	}
@@ -342,6 +345,13 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 				return 0;
 			}
 			if (param->is_param) {
+#if PHP_VERSION_ID >= 70000
+				if (!Z_ISREF(param->parameter)) {
+					parameter = &param->parameter;
+				} else {
+					parameter = Z_REFVAL(param->parameter);
+				}	
+#endif
 				switch (PDO_PARAM_TYPE(param->param_type)) {
 					case PDO_PARAM_STMT:
 						return 0;
@@ -352,7 +362,7 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 					case PDO_PARAM_INT:
 						{
 #if PHP_VERSION_ID >= 70000
-							FOURD_LONG val=Z_LVAL(param->parameter);
+							FOURD_LONG val=Z_LVAL_P(parameter);
 #else
 							FOURD_LONG val=Z_LVAL_P(param->parameter);
 #endif
