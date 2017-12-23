@@ -359,6 +359,16 @@ static int pdo_4d_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data 
 					case PDO_PARAM_NULL:
 						fourd_bind_param(S->state,param->paramno,VK_STRING, NULL);
 						return 1;
+					case PDO_PARAM_BOOL:
+						{
+#if PHP_VERSION_ID >= 70000
+							FOURD_LONG val=Z_LVAL_P(parameter);
+#else
+							FOURD_LONG val=Z_LVAL_P(param->parameter);
+#endif
+							fourd_bind_param(S->state,param->paramno,VK_BOOLEAN, &val);
+						}
+						return 1;
 					case PDO_PARAM_INT:
 						{
 #if PHP_VERSION_ID >= 70000
